@@ -1,35 +1,47 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { signOut } from 'firebase/auth'
 import { database } from './FirebaseConfig'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 
 const Home = () => {
+  
+  // To get Photos
   const [photosList, setPhotosList] = useState([])
+  // const [searchValue, setSearchValue] = useState()
 
-  const options = {
-    method: 'GET',
-    headers:{
-      Accept: 'application/json',
-  // ${import.meta.env.VITE_SOME_KEY}
-      Authorization: `${import.meta.env.VITE_SOME_KEY}`
-    }
-  }
-  // find a way to use the env
+  const API_URL = "https://api.unsplash.com/search/photos"
   async function getPhotos() {
-    const data = await fetch("https://api.pexels.com/v1/curated?query=nature&per_page=12", options)
-    const dataObj = await data.json()
-    setPhotosList(dataObj.photos);
+    try {
+      const { data } = await axios.get(`${API_URL}?query=${searchInput.current.value}&page=1&per_page=20&client_id=${import.meta.env.VITE_SOME_KEY}`)
+      setPhotosList(data.results);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   useEffect(() => {
     getPhotos()
   }, []);
 
-  // console.log(photosList);
+  console.log(photosList);
+  
+  //  To Search
+  const searchInput = useRef(null)
+  const handleSearch = (e) => {
+    e.preventDefault()
+    console.log(searchInput.current.value);
+    getPhotos()
 
+  }
 
+  const handleSelection = (selection) => {
+    searchInput.current.value = selection
+    getPhotos()
+  }
 
+  // To Sign Out
   const history = useNavigate()
 
   const handleClick = () => {
@@ -39,11 +51,52 @@ const Home = () => {
     })
   }
 
-  const photosListElement = photosList.map( photo => (
-    <div key={photo.id}>
+
+  // To Drag Element Reference
+  const dragItem = React.useRef(null)
+  const dragOverItem = React.useRef(null)
+
+  // const onDragStart = (e, index) => {
+  //   console.log("drag started", index);
+  // }
+  // const onDragEnter = (e, index) => {
+  //   console.log("drag entered", index);
+  // }
+  // const onDragEnd = (e) => {
+  //   console.log("drag ended");
+  // }
+
+
+  const handleSorting = () => {
+    // Duplicating the photo List
+    let photoItems = [...photosList]
+    // Removing and saving the dragged item
+    const draggedItemContent = photoItems.splice(dragItem.current, 1)[0]
+    // Switch Items
+    photoItems.splice(dragOverItem.current, 0, draggedItemContent)
+    // Reset the position ref
+    dragItem.current = null
+    dragOverItem.current = null
+    // Update the actual array
+    setPhotosList(photoItems)
+  }
+
+
+  // Photo Grid Element
+  const photosListElement = photosList.map( (photo, index) => (
+    <div 
+      key={photo.id} 
+      draggable
+      className='cursor-grab flex justify-center items-center'
+      onDragStart={(e) => dragItem.current = index}
+      onDragEnter={(e) => dragOverItem.current = index}
+      onDragEnd={handleSorting}
+      onDragOver={(e) => e.preventDefault()}
+    >
       <img 
-        src={photo.src.tiny} 
-        className='rounded' 
+      draggable
+        src={photo.urls.small} 
+        className='w-48 h-48 md:h-56  sm:w-80 sm:h-80  object-cover rounded ' 
         alt={photo.alt} />
     </div>
   ))
@@ -51,6 +104,14 @@ const Home = () => {
   return (
     <div className='bg-bg-orange w-full h-max p-8 | flex flex-col justify-center items-center gap-8'>
       <button onClick={handleClick} className='text-orange font-semibold rounded-md py-2  | absolute top-6 right-8'>Sign Out</button>
+      <form onSubmit={handleSearch} className='w-full flex justify-center items-center'>
+        <input 
+          type="text" 
+          className='w-full sm:w-4/5 py-2 px-4 outline-none rounded-md'
+          placeholder='Search Images'
+          ref={searchInput}/>
+        <button onClick={() => handleSelection('nature')} className='text-orange border-solid border-orange p-2'>Search</button>
+      </form>
       <h1 className='text-black text-2xl'>Drag & Drop the images wherever you like</h1>
       <div className='w-full grid sm:grid-cols-4 grid-cols-2 content-center gap-4 '>
         {
