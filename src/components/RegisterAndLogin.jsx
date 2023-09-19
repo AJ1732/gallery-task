@@ -65,7 +65,7 @@ const RegisterAndLogin = () => {
         </span>
         <span 
           onClick={() => setLogin(!login)} 
-          className='text-orange font-semibold'> 
+          className='text-orange cursor-pointer font-semibold'> 
             {login? "Create one": "Sign In"}
         </span>
       </p>

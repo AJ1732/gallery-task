@@ -2,55 +2,70 @@ import React, { useState, useEffect, useRef } from 'react'
 import { signOut } from 'firebase/auth'
 import { database } from './FirebaseConfig'
 import { useNavigate } from 'react-router-dom'
+import Search from './Search'
 import axios from 'axios'
 
 
-const Home = () => {
-  
-  // To get Photos
-  const [photosList, setPhotosList] = useState([])
-  // const [searchValue, setSearchValue] = useState()
 
-  const API_URL = "https://api.unsplash.com/search/photos"
-  async function getPhotos() {
-    try {
-      const { data } = await axios.get(`${API_URL}?query=${searchInput.current.value}&page=1&per_page=20&client_id=${import.meta.env.VITE_SOME_KEY}`)
-      setPhotosList(data.results);
-    } catch (error) {
-      console.log(error);
-    }
+const Home = () => {
+  const API_URL_1 = "https://api.unsplash.com/photos/"
+  // To set default photos
+  const [defaultPhotos, setDefaultPhotos] = useState([])
+  async function getDefaultPhotos() {
+    const data = await fetch(`${API_URL_1}?client_id=${import.meta.env.VITE_SOME_KEY}`)
+    const dataObj = await data.json()
+    setDefaultPhotos(dataObj)
   }
 
   useEffect(() => {
-    getPhotos()
+    getDefaultPhotos()
   }, []);
 
-  console.log(photosList);
-  
+  console.log(defaultPhotos);
+
+   // To get searched Photos
+   const API_URL = "https://api.unsplash.com/search/photos/"
+
+   const [photosList, setPhotosList] = useState([])
+ 
+   async function getPhotos() {
+     try {
+       const { data } = await axios.get(`${API_URL}?query=${searchInput.current.value}&page=1&per_page=20&client_id=${import.meta.env.VITE_SOME_KEY}`)
+       setPhotosList(data.results);
+     } catch (error) {
+       console.log(error);
+     }
+   }
+ 
+   useEffect(() => {
+     getPhotos()
+   }, []);
+ 
+   console.log(photosList);
+
   //  To Search
   const searchInput = useRef(null)
+
   const handleSearch = (e) => {
     e.preventDefault()
     console.log(searchInput.current.value);
     getPhotos()
-
   }
 
-  const handleSelection = (selection) => {
-    searchInput.current.value = selection
-    getPhotos()
-  }
+  // const handleSelection = (selection) => {
+  //   searchInput.current.value = selection
+  //   getPhotos()
+  // }
 
   // To Sign Out
   const history = useNavigate()
 
-  const handleClick = () => {
+  const handleSignOut = () => {
     signOut(database).then( value => {
-      // console.log(value, "value")
+      console.log(value, "value")
       history("/")
     })
   }
-
 
   // To Drag Element Reference
   const dragItem = React.useRef(null)
@@ -69,23 +84,48 @@ const Home = () => {
 
   const handleSorting = () => {
     // Duplicating the photo List
-    let photoItems = [...photosList]
+    // let photoItems = [...photosList]
+    let defaultItems = [...defaultPhotos]
     // Removing and saving the dragged item
-    const draggedItemContent = photoItems.splice(dragItem.current, 1)[0]
+    // const draggedItemContent = photoItems.splice(dragItem.current, 1)[0]
+    const draggedDefaultItemContent = defaultItems.splice(dragItem.current, 1)[0]
     // Switch Items
-    photoItems.splice(dragOverItem.current, 0, draggedItemContent)
+    // photoItems.splice(dragOverItem.current, 0, draggedItemContent)
+    defaultItems.splice(dragOverItem.current, 0, draggedDefaultItemContent)
     // Reset the position ref
     dragItem.current = null
     dragOverItem.current = null
     // Update the actual array
-    setPhotosList(photoItems)
+    // setPhotosList(photoItems)
+    setDefaultPhotos(defaultItems)
   }
 
+  const handleFilterSorting = () => {
+    // Duplicating the photo List
+    let photoItems = [...photosList]
+    // let defaultItems = [...defaultPhotos]
+    
+    // Removing and saving the dragged item
+    const draggedItemContent = photoItems.splice(dragItem.current, 1)[0]
+    // const draggedDefaultItemContent = defaultItems.splice(dragItem.current, 1)[0]
+    
+    // Switch Items
+    photoItems.splice(dragOverItem.current, 0, draggedItemContent)
+    // defaultItems.splice(dragOverItem.current, 0, draggedDefaultItemContent)
+    
+    // Reset the position ref
+    dragItem.current = null
+    dragOverItem.current = null
+    
+    // Update the actual array
+    setPhotosList(photoItems)
+    // setDefaultPhotos(defaultItems)
+  }
 
-  // Photo Grid Element
-  const photosListElement = photosList.map( (photo, index) => (
+  // Default Photo Element
+  const defaultPhotosElement = defaultPhotos.map( (photos, index) => ( 
     <div 
-      key={photo.id} 
+      key={photos.id} 
       draggable
       className='cursor-grab flex justify-center items-center'
       onDragStart={(e) => dragItem.current = index}
@@ -95,29 +135,64 @@ const Home = () => {
     >
       <img 
       draggable
-        src={photo.urls.small} 
+        src={photos.urls.small} 
         className='w-48 h-48 md:h-56  sm:w-80 sm:h-80  object-cover rounded ' 
-        alt={photo.alt} />
+        alt={photos.alt} />
     </div>
   ))
 
+  // Photo Grid Element
+  const photosListElement = photosList.map( (photo, index) => (
+    <div 
+      key={photo.id} 
+      draggable
+      className='cursor-grab flex justify-center items-center '
+      onDragStart={(e) => dragItem.current = index}
+      onDragEnter={(e) => dragOverItem.current = index}
+      onDragEnd={handleFilterSorting}
+      onDragOver={(e) => e.preventDefault()}
+    >
+      <img 
+      draggable
+        src={photo.urls.small} 
+        className='w-48 h-48 md:h-56  sm:w-80 sm:h-80  object-cover rounded ' 
+        alt={photo.alt} />
+
+      <div>
+        {
+          photosList.length == 0? 
+          <h2 className='w-full text-center text-3xl m-auto h-10 p'>No Results Found</h2>:
+          ""
+        }
+      </div>
+    </div>
+  ))
+  
+
   return (
     <div className='bg-bg-orange w-full h-max p-8 | flex flex-col justify-center items-center gap-8'>
-      <button onClick={handleClick} className='text-orange font-semibold rounded-md py-2  | absolute top-6 right-8'>Sign Out</button>
-      <form onSubmit={handleSearch} className='w-full flex justify-center items-center'>
-        <input 
-          type="text" 
-          className='w-full sm:w-4/5 py-2 px-4 outline-none rounded-md'
-          placeholder='Search Images'
-          ref={searchInput}/>
-        <button onClick={() => handleSelection('nature')} className='text-orange border-solid border-orange p-2'>Search</button>
-      </form>
+      <button onClick={handleSignOut} className='text-orange font-semibold rounded-md py-2  | absolute top-5 right-8'>Sign Out</button>
       <h1 className='text-black text-2xl'>Drag & Drop the images wherever you like</h1>
+      <Search 
+        photosList={photosList}
+        handleSearch={handleSearch}
+        searchInput={searchInput} />
+      
+      <div>
+        {
+          defaultPhotos > 0? 
+          <h2 className='w-full text-center text-3xl m-auto h-calc p-20'>Loading...</h2>:
+          ""
+        }
+      </div>
+
+      
+
       <div className='w-full grid sm:grid-cols-4 grid-cols-2 content-center gap-4 '>
         {
           photosList.length > 0? 
           photosListElement: 
-          <h2 className='w-full text-center text-3xl m-auto h-calc p-20'>Loading...</h2>
+          defaultPhotosElement
         }
       </div>
     </div>
