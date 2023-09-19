@@ -11,7 +11,8 @@ const Home = () => {
     method: 'GET',
     headers:{
       Accept: 'application/json',
-      Authorization: ''
+  // ${import.meta.env.VITE_SOME_KEY}
+      Authorization: `${import.meta.env.VITE_SOME_KEY}`
     }
   }
   // find a way to use the env
