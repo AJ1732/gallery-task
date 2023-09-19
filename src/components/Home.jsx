@@ -180,13 +180,11 @@ const Home = () => {
       
       <div>
         {
-          defaultPhotos > 0? 
+          defaultPhotos <= 0? 
           <h2 className='w-full text-center text-3xl m-auto h-calc p-20'>Loading...</h2>:
           ""
         }
       </div>
-
-      
 
       <div className='w-full grid sm:grid-cols-4 grid-cols-2 content-center gap-4 '>
         {
