@@ -10,7 +10,7 @@ npm run dev
 ## Demo
 
 Live Link:
-https://1732-gallery-task.netlify.app/home
+https://1732-gallery-task.netlify.app/
 
 ## Project Overview & Features
 
@@ -25,7 +25,7 @@ https://1732-gallery-task.netlify.app/home
 Before you begin, ensure you have met the following requirements:
 
 - [Node.js](https://nodejs.org/) installed.
-- TMDB API Key (Replace `'YOUR_API_KEY'` with your actual API key).
+- API Key (Replace `'VITE_API_KEY'` with your actual API key).
 
 ### Installation
 
@@ -33,10 +33,10 @@ To install and run this project, follow these steps:
 
 ```bash
 # Clone the repository
-git clone https://github.com/AJ1732/gallery-task
+git clone https://github.com/AJ1732/gallery-task.git
 
 # Navigate to the project directory
-cd movieBox-task
+cd gallery-task
 
 # Install dependencies
 npm install
