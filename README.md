@@ -1,4 +1,4 @@
-## Movie Box
+## Gallery Drop
 
 A fully functional and responsive image gallery that showcases a collection of images in a visually appealing way. Ability to Login to the gallery page. Authenticated users are able to use the Drag-and-Drop feature, able to select and drag images, effortlessly rearranging them within the gallery.
 This project consumes data from the unSplash API.
@@ -43,10 +43,4 @@ npm install
 
 # Start the development server
 npm run dev
-
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 ```
